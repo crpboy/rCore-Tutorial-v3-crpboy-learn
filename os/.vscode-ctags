@@ -1,0 +1,39 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROC_CWD	/home/crpboy/os/rCore-Tutorial-v3/os/	//
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	5.9.0	//
+$(KERNEL_BIN)	Makefile	/^$(KERNEL_BIN): kernel$/;"	t
+BOARD	Makefile	/^BOARD := qemu$/;"	m
+BOOTLOADER	Makefile	/^BOOTLOADER := ..\/bootloader\/$(SBI)-$(BOARD).bin$/;"	m
+DISASM	Makefile	/^DISASM ?= -x$/;"	m
+DISASM_TMP	Makefile	/^DISASM_TMP := target\/$(TARGET)\/$(MODE)\/asm$/;"	m
+KERNEL_BIN	Makefile	/^KERNEL_BIN := $(KERNEL_ELF).bin$/;"	m
+KERNEL_ELF	Makefile	/^KERNEL_ELF := target\/$(TARGET)\/$(MODE)\/os$/;"	m
+KERNEL_ENTRY_PA	Makefile	/^KERNEL_ENTRY_PA := 0x80200000$/;"	m
+MODE	Makefile	/^MODE := release$/;"	m
+MODE_ARG	Makefile	/^	MODE_ARG := --release$/;"	m
+OBJCOPY	Makefile	/^OBJCOPY := rust-objcopy --binary-architecture=riscv64$/;"	m
+OBJDUMP	Makefile	/^OBJDUMP := rust-objdump --arch-name=riscv64$/;"	m
+QEMU_ARGS	Makefile	/^QEMU_ARGS := -machine virt \\$/;"	m
+QEMU_NAME	Makefile	/^QEMU_NAME := qemu-system-riscv64$/;"	m
+SBI	Makefile	/^SBI ?= rustsbi$/;"	m
+TARGET	Makefile	/^TARGET := riscv64gc-unknown-none-elf$/;"	m
+build	Makefile	/^build: env $(KERNEL_BIN)$/;"	t
+clean	Makefile	/^clean:$/;"	t
+debug	Makefile	/^debug: qemu-version-check build$/;"	t
+disasm	Makefile	/^disasm: kernel$/;"	t
+disasm-vim	Makefile	/^disasm-vim: kernel$/;"	t
+env	Makefile	/^env:$/;"	t
+gdbclient	Makefile	/^gdbclient:$/;"	t
+gdbserver	Makefile	/^gdbserver: qemu-version-check build$/;"	t
+kernel	Makefile	/^kernel:$/;"	t
+qemu-version-check	Makefile	/^qemu-version-check:$/;"	t
+run	Makefile	/^run: run-inner$/;"	t
+run-inner	Makefile	/^run-inner: qemu-version-check build$/;"	t

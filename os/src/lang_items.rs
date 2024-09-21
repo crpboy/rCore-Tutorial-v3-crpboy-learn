@@ -1,11 +1,12 @@
 //! The panic handler
 
-use crate::sbi::shutdown;
+use crate::{sbi::shutdown, utils::trace_stack};
 use core::panic::PanicInfo;
 use log::*;
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
+    trace_stack();
     if let Some(location) = info.location() {
         error!(
             "[kernel] Panicked at {}:{} {}",

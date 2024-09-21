@@ -1,6 +1,6 @@
 //! batch subsystem
 
-use crate::sbi::shutdown;
+use crate::statistic_time;
 use crate::sync::UPSafeCell;
 use crate::trap::TrapContext;
 use core::arch::asm;
@@ -70,7 +70,9 @@ impl AppManager {
     unsafe fn load_app(&self, app_id: usize) {
         if app_id >= self.num_app {
             println!("All applications completed!");
-            shutdown(false);
+            panic!("qwq");
+            // use crate::sbi::shutdown;
+            // shutdown(false);
         }
         println!("[kernel] Loading app_{}", app_id);
         // clear app area
@@ -134,9 +136,9 @@ pub fn print_app_info() {
 pub fn run_next_app() -> ! {
     let mut app_manager = APP_MANAGER.exclusive_access();
     let current_app = app_manager.get_current_app();
-    unsafe {
+    statistic_time!(unsafe {
         app_manager.load_app(current_app);
-    }
+    });
     app_manager.move_to_next_app();
     drop(app_manager);
     // before this we have to drop local variables related to resources manually

@@ -14,8 +14,9 @@
 //! We then call [`batch::run_next_app()`] and for the first time go to
 //! userspace.
 
-#![deny(missing_docs)]
-#![deny(warnings)]
+// #![deny(missing_docs)]
+// #![deny(warnings)]
+
 #![no_std]
 #![no_main]
 #![feature(panic_info_message)]
@@ -32,6 +33,7 @@ mod sbi;
 mod sync;
 pub mod syscall;
 pub mod trap;
+mod utils;
 
 global_asm!(include_str!("entry.asm"));
 global_asm!(include_str!("link_app.S"));
