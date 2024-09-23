@@ -1,5 +1,5 @@
 //! batch subsystem
-
+use crate::sbi::shutdown;
 use crate::statistic_time;
 use crate::sync::UPSafeCell;
 use crate::trap::TrapContext;
@@ -44,6 +44,7 @@ impl KernelStack {
 
 impl UserStack {
     fn get_sp(&self) -> usize {
+        // println!("user_stack_get_sp: {:?}", self.data.as_ptr());
         self.data.as_ptr() as usize + USER_STACK_SIZE
     }
 }
@@ -70,9 +71,7 @@ impl AppManager {
     unsafe fn load_app(&self, app_id: usize) {
         if app_id >= self.num_app {
             println!("All applications completed!");
-            panic!("qwq");
-            // use crate::sbi::shutdown;
-            // shutdown(false);
+            shutdown(false);
         }
         println!("[kernel] Loading app_{}", app_id);
         // clear app area
@@ -90,6 +89,7 @@ impl AppManager {
         // the code of the next app into the instruction memory.
         // See also: riscv non-priv spec chapter 3, 'Zifencei' extension.
         asm!("fence.i");
+        println!("=== load done ===");
     }
 
     pub fn get_current_app(&self) -> usize {
@@ -134,11 +134,19 @@ pub fn print_app_info() {
 
 /// run next app
 pub fn run_next_app() -> ! {
+    static mut LAST_TIME: usize = 0;
+    let cur_time = crate::utils::fetch_time() as usize;
+    unsafe {
+        if LAST_TIME != 0 {
+            println!("cost time: {}", cur_time - LAST_TIME);
+        }
+        LAST_TIME = cur_time;
+    }
     let mut app_manager = APP_MANAGER.exclusive_access();
     let current_app = app_manager.get_current_app();
-    statistic_time!(unsafe {
+    unsafe {
         app_manager.load_app(current_app);
-    });
+    }
     app_manager.move_to_next_app();
     drop(app_manager);
     // before this we have to drop local variables related to resources manually
@@ -151,6 +159,6 @@ pub fn run_next_app() -> ! {
             APP_BASE_ADDRESS,
             USER_STACK.get_sp(),
         )) as *const _ as usize);
-    }
+    };
     panic!("Unreachable in batch::run_current_app!");
 }
