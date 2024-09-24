@@ -23,3 +23,7 @@ easy-fs-fuse/target/*
 tools/
 pushall.sh
 *.bak
+
+archive/
+tmp/
+.vscode-ctags
