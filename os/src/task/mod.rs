@@ -56,6 +56,8 @@ lazy_static! {
         let mut tasks = [TaskControlBlock {
             task_cx: TaskContext::zero_init(),
             task_status: TaskStatus::UnInit,
+            user_time: 0,
+            kernel_time: 0,
         }; MAX_APP_NUM];
         for (i, task) in tasks.iter_mut().enumerate() {
             task.task_cx = TaskContext::goto_restore(init_app_cx(i));
@@ -125,6 +127,24 @@ impl TaskManager {
             let current = inner.current_task;
             inner.tasks[next].task_status = TaskStatus::Running;
             inner.current_task = next;
+
+            // debug
+            if current != next {
+                println!("\n====== SWITCHING TO ANOTHER TASK ======");
+                println!(
+                    "user   time of {} is {}",
+                    current,
+                    inner.tasks[current].get_user_time()
+                );
+                inner.tasks[next].set_user_time();
+                println!(
+                    "kernel time of {} is {}",
+                    current,
+                    inner.tasks[current].update_kernel_time()
+                );
+                println!("### switch: {} -> {}\n", current, next);
+            }
+
             let current_task_cx_ptr = &mut inner.tasks[current].task_cx as *mut TaskContext;
             let next_task_cx_ptr = &inner.tasks[next].task_cx as *const TaskContext;
             drop(inner);
