@@ -17,3 +17,10 @@ sbi-rt = { version = "0.0.2", features = ["legacy"] }
 
 [profile.release]
 debug = true
+
+[[bin]]
+name = "os"
+path = "src/main.rs"
+test = false
+doctest = false
+bench = false
