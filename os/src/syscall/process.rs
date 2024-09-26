@@ -1,6 +1,5 @@
 use crate::task::{
-    suspend_current_and_run_next,
-    exit_current_and_run_next,
+    exit_current_and_run_next, suspend_current_and_run_next, TASK_MANAGER
 };
 use crate::timer::get_time_us;
 
@@ -22,10 +21,6 @@ pub fn sys_yield() -> isize {
     0
 }
 
-// pub fn sys_get_time() -> isize {
-//     get_time_ms() as isize
-// }
-
 pub fn sys_get_time(ts: *mut TimeVal, _tz: usize) -> isize {
     let us = get_time_us();
     unsafe {
@@ -35,4 +30,19 @@ pub fn sys_get_time(ts: *mut TimeVal, _tz: usize) -> isize {
         };
     }
     0
+}
+
+pub struct TaskInfo {
+    id: usize,
+    status: TaskStatus,
+    call: [SyscallInfo; MAX_SYSCALL_NUM],
+    time: usize
+}
+
+pub struct SyscallInfo {
+    id: usize,
+    times: usize
+}
+
+pub fn sys_task_info(id: usize, ts: *mut TaskInfo) -> isize {
 }
