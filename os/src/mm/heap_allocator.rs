@@ -1,8 +1,15 @@
 //! The global allocator
+//! 用于分配堆空间
+//! 其中HEAP_ALLOCATOR用于进行实际的空间分配
+//! 而它使用的是HEAP_SPACE占据的一块内存空间
+//! HEAP_SPACE是一段连续固定的内存，专门用于保存堆中数据
+//! 大小为0x30_0000，由config定义
 
 use crate::config::KERNEL_HEAP_SIZE;
 use buddy_system_allocator::LockedHeap;
 
+/// 通过这个global_allocator来进行堆对象的识别
+/// 这样编译器就会使用HEAP_ALLOCATOR来维护堆上数据了
 #[global_allocator]
 /// heap allocator instance
 static HEAP_ALLOCATOR: LockedHeap = LockedHeap::new();
@@ -22,6 +29,8 @@ pub fn init_heap() {
         HEAP_ALLOCATOR
             .lock()
             .init(HEAP_SPACE.as_ptr() as usize, KERNEL_HEAP_SIZE);
+        // lock: 创建互斥锁，防止被其他线程修改
+        // init: 初始化 其中 start = HEAP_SPACE size = KERNEL_HEAP_SIZE
     }
 }
 

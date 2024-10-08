@@ -20,10 +20,13 @@
 #![no_std]
 #![no_main]
 #![feature(panic_info_message)]
+// new: 处理分配alloc错误的情况
 #![feature(alloc_error_handler)]
 
+// 动态分配内存：堆空间实现时需要
 extern crate alloc;
 
+// 用于维护addr的转换
 #[macro_use]
 extern crate bitflags;
 
@@ -62,6 +65,7 @@ fn clear_bss() {
 /// the rust entry-point of os
 pub fn rust_main() -> ! {
     clear_bss();
+    // memory management init
     println!("[kernel] Hello, world!");
     mm::init();
     println!("[kernel] back to world!");

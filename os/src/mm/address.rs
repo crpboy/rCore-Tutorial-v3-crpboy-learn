@@ -1,4 +1,25 @@
 //! Implementation of physical and virtual address and page number.
+//! 这里实现了大量的涉及偏硬件层面类型转换的东西
+//! 包括物理地址pa 虚拟地址va 物理页帧pfn 虚拟页表vpn
+//!
+//! 给出定义：
+//! va就是程序里原始的虚拟地址
+//! pa是我们最终需要访问的地址
+//! vpn是va的高39~12位，一共27bit，需要通过vpn转换为pfn，最终访问pa
+//! pfn是pa的56~12位，一共44bit，它是通过三级页表转换机制得到的
+//!
+//! 如何设置sv39？csr.satp的高4位设置为1000B
+//!
+//! 一页的大小为4KB，使用12位页内偏移进行索引
+//! 所以不论是pa/va，它的低12位都是页内偏移
+//!
+//! 软件会使用va的39~12位作为vpn，分为3个9bit进行三级页表检索
+//! 如何检索？一般来说csr.satp中保存了根页表的地址，它的低44位指向了根页表的起始地址
+//! 这是一个512KB的页表，vpn.0保存了这个根页表内的偏移量
+//!
+//! 通过索引，会找到一个54位的页表项pte，其中高44位指向了下一级页表的地址，低10位是各类标志位
+//! 我们逐级访问页表，最终找到了三级页表项
+//! 此时它的高44位就是pfn，与va的低12位页内偏移拼接之后就有了56位的pa
 
 use super::PageTableEntry;
 use crate::config::{PAGE_SIZE, PAGE_SIZE_BITS};
@@ -52,6 +73,7 @@ impl Debug for PhysPageNum {
 /// T: {PhysAddr, VirtAddr, PhysPageNum, VirtPageNum}
 /// T -> usize: T.0
 /// usize -> T: usize.into()
+/// 实现了四类struct和usize的互转
 
 impl From<usize> for PhysAddr {
     fn from(v: usize) -> Self {
@@ -98,6 +120,9 @@ impl From<VirtPageNum> for usize {
     }
 }
 
+/// 对于va pa的pagenum转换进行实现
+/// 实现了floor和ceil的pagenum
+/// 实现了va <> vpn, pa <> pfn
 impl VirtAddr {
     pub fn floor(&self) -> VirtPageNum {
         VirtPageNum(self.0 / PAGE_SIZE)
@@ -157,6 +182,7 @@ impl From<PhysPageNum> for PhysAddr {
     }
 }
 
+/// 获得三级页表中的各级页索引index
 impl VirtPageNum {
     pub fn indexes(&self) -> [usize; 3] {
         let mut vpn = self.0;
@@ -184,6 +210,7 @@ impl PhysPageNum {
     }
 }
 
+/// 实现了一个使得变量能自增的trait
 pub trait StepByOne {
     fn step(&mut self);
 }
@@ -193,6 +220,7 @@ impl StepByOne for VirtPageNum {
     }
 }
 
+/// simple range 一个实现了迭代器的区间
 #[derive(Copy, Clone)]
 /// a simple range structure for type T
 pub struct SimpleRange<T>

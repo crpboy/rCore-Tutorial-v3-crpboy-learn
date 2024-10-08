@@ -6,7 +6,7 @@ pub const KERNEL_HEAP_SIZE: usize = 0x30_0000;
 pub const PAGE_SIZE: usize = 0x1000;
 pub const PAGE_SIZE_BITS: usize = 0xc;
 
-pub const TRAMPOLINE: usize = usize::MAX - PAGE_SIZE + 1;
+pub const TRAMPOLINE: usize = usize::MAX - PAGE_SIZE + 1; // 令跳板空间为最高空间
 pub const TRAP_CONTEXT: usize = TRAMPOLINE - PAGE_SIZE;
 /// Return (bottom, top) of a kernel stack in kernel space.
 pub fn kernel_stack_position(app_id: usize) -> (usize, usize) {

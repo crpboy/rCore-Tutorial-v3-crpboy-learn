@@ -1,5 +1,10 @@
 //! Implementation of [`FrameAllocator`] which
 //! controls all the frames in the operating system.
+//!
+//! 这里用于进行物理页帧的分配
+//! 两个struct FrameTracker StackFrameAllocator
+//! StackFrameAllocator用于分配页帧
+//! FrameTracker内部存储了一个pfn，用于跟踪alloc出来的单个页帧
 
 use super::{PhysAddr, PhysPageNum};
 use crate::config::MEMORY_END;
@@ -13,6 +18,9 @@ pub struct FrameTracker {
     pub ppn: PhysPageNum,
 }
 
+/// 单个页帧的维护
+/// 使用额外的tracker包装的好处是可以方便地额外实现Drop trait来实现内存释放
+/// 具体地，Drop会调用ALLOCATOR上的dealloc来完成自动内存释放
 impl FrameTracker {
     pub fn new(ppn: PhysPageNum) -> Self {
         // page cleaning
@@ -63,6 +71,8 @@ impl FrameAllocator for StackFrameAllocator {
             recycled: Vec::new(),
         }
     }
+    /// 分配空间：优先从已分配的freelist当中取
+    /// 否则从未分配空间当中取
     fn alloc(&mut self) -> Option<PhysPageNum> {
         if let Some(ppn) = self.recycled.pop() {
             Some(ppn.into())
@@ -73,6 +83,9 @@ impl FrameAllocator for StackFrameAllocator {
             Some((self.current - 1).into())
         }
     }
+    /// 在tracker生命周期结束的时候会自动调用
+    /// 将已经分配的内存空间回收，插入到vec中方便下次使用
+    /// 会进行未分配空间判断/重复元素判断
     fn dealloc(&mut self, ppn: PhysPageNum) {
         let ppn = ppn.0;
         // validity check
@@ -93,6 +106,7 @@ lazy_static! {
 }
 
 /// initiate the frame allocator using `ekernel` and `MEMORY_END`
+/// ekernel是内核代码的结束位置，后面的内存就可以用于保存页帧数据了
 pub fn init_frame_allocator() {
     extern "C" {
         fn ekernel();
@@ -103,6 +117,8 @@ pub fn init_frame_allocator() {
     );
 }
 
+/// 下面两个是对于全局ALLOCATOR的alloc和dealloc的维护
+/// 一般来说dealloc通过track.drop自动实现
 /// allocate a frame
 pub fn frame_alloc() -> Option<FrameTracker> {
     FRAME_ALLOCATOR
