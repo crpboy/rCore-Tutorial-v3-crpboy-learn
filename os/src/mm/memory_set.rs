@@ -163,7 +163,7 @@ impl MemorySet {
     }
     /// Include sections in elf and trampoline and TrapContext and user stack,
     /// also returns user_sp and entry point.
-    /// 从elf当中加载用户应用程序
+    /// 从elf当中加载用户应用程序，创建应用地址空间
     pub fn from_elf(elf_data: &[u8]) -> (Self, usize, usize) {
         let mut memory_set = Self::new_bare();
 
@@ -184,6 +184,7 @@ impl MemorySet {
         assert_eq!(magic, [0x7f, 0x45, 0x4c, 0x46], "invalid elf!");
 
         // ph -> program header
+        // 这里会遍历所有的program header来分别加载它们的flags
         let ph_count = elf_header.pt2.ph_count();
         let mut max_end_vpn = VirtPageNum(0);
         for i in 0..ph_count {
@@ -191,7 +192,9 @@ impl MemorySet {
             if ph.get_type().unwrap() == xmas_elf::program::Type::Load {
                 let start_va: VirtAddr = (ph.virtual_addr() as usize).into();
                 let end_va: VirtAddr = ((ph.virtual_addr() + ph.mem_size()) as usize).into();
-                let mut map_perm = MapPermission::U;
+
+                // read flags
+                let mut map_perm = MapPermission::U; // set user mode
                 let ph_flags = ph.flags();
                 if ph_flags.is_read() {
                     map_perm |= MapPermission::R;
@@ -202,8 +205,13 @@ impl MemorySet {
                 if ph_flags.is_execute() {
                     map_perm |= MapPermission::X;
                 }
+
+                // create map area
                 let map_area = MapArea::new(start_va, end_va, MapType::Framed, map_perm);
                 max_end_vpn = map_area.vpn_range.get_end();
+
+                // push into memory set
+                // 加载用户程序数据
                 memory_set.push(
                     map_area,
                     Some(&elf.input[ph.offset() as usize..(ph.offset() + ph.file_size()) as usize]),
@@ -212,9 +220,10 @@ impl MemorySet {
         }
         // map user stack with U flags
         let max_end_va: VirtAddr = max_end_vpn.into();
+
+        // 下面开始创建用户栈
         let mut user_stack_bottom: usize = max_end_va.into();
-        // guard page
-        user_stack_bottom += PAGE_SIZE;
+        user_stack_bottom += PAGE_SIZE; // guard page 防止用户栈溢出
         let user_stack_top = user_stack_bottom + USER_STACK_SIZE;
         memory_set.push(
             MapArea::new(
@@ -225,6 +234,7 @@ impl MemorySet {
             ),
             None,
         );
+
         // used in sbrk
         memory_set.push(
             MapArea::new(
@@ -236,6 +246,7 @@ impl MemorySet {
             None,
         );
         // map TrapContext
+        // 位于应用地址空间的次高地址
         memory_set.push(
             MapArea::new(
                 TRAP_CONTEXT.into(),

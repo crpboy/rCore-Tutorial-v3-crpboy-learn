@@ -4,6 +4,12 @@ use riscv::register::sstatus::{self, Sstatus, SPP};
 
 #[repr(C)]
 /// trap context structure containing sstatus, sepc and registers
+/// trap上下文
+/// 相比起ch3 由于实现了分页机制，需要额外保存satp + kernel_sp
+/// 为什么要加入trap_handler？
+/// 因为实现了分页机制，当前虚拟地址与handler入口之间的偏移量已经发生了改变
+/// 不能通过编译器默认的 使用偏移量的方式 进入traphandler
+/// 而是应该使用绝对地址进入函数，这样才能够进行正确的地址映射
 pub struct TrapContext {
     /// general regs[0..31]
     pub x: [usize; 32],

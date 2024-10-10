@@ -23,9 +23,15 @@ impl TaskControlBlock {
     pub fn get_user_token(&self) -> usize {
         self.memory_set.token()
     }
+    /// 这里是一个通过elf初始化某一应用程序的过程
+    /// 由于实现了分页机制，会首先使用memory_set进行分页的初始化以及数据拷贝
+    /// 并且，由于引入了新的context内容，这里的初始化过程会包含新的上下文
     pub fn new(elf_data: &[u8], app_id: usize) -> Self {
         // memory_set with elf program headers/trampoline/trap context/user stack
+        // 申请一片属于应用程序的memory_set
+        // 获得：地址空间 + 用户栈栈头指针 + 程序入口地址
         let (memory_set, user_sp, entry_point) = MemorySet::from_elf(elf_data);
+
         let trap_cx_ppn = memory_set
             .translate(VirtAddr::from(TRAP_CONTEXT).into())
             .unwrap()
