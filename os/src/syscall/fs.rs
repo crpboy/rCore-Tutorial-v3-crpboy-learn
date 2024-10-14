@@ -29,9 +29,11 @@ pub fn sys_read(fd: usize, buf: *const u8, len: usize) -> isize {
             loop {
                 c = console_getchar();
                 if c == 0 {
+                    // println!("\n### input not happen");
                     suspend_current_and_run_next();
                     continue;
                 } else {
+                    // println!("\n### input happen");
                     break;
                 }
             }

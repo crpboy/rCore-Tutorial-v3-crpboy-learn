@@ -9,6 +9,7 @@ use alloc::sync::{Arc, Weak};
 use alloc::vec::Vec;
 use core::cell::RefMut;
 
+/// 承担PCB的职责
 pub struct TaskControlBlock {
     // immutable
     pub pid: PidHandle,
@@ -92,6 +93,9 @@ impl TaskControlBlock {
         );
         task_control_block
     }
+    /// 将当前的进程的执行代码更改为elf_data当中的内容
+    /// 会创建一段新的内存空间, 用于替代原先的内存空间
+    /// 此时原先的内存空间生命周期结束, 内部所有物理页帧被析构
     pub fn exec(&self, elf_data: &[u8]) {
         // memory_set with elf program headers/trampoline/trap context/user stack
         let (memory_set, user_sp, entry_point) = MemorySet::from_elf(elf_data);
@@ -123,6 +127,7 @@ impl TaskControlBlock {
         // ---- access parent PCB exclusively
         let mut parent_inner = self.inner_exclusive_access();
         // copy user space(include trap context)
+        // 这里使用了from_existed_user而不是from_elf来创建memory_set
         let memory_set = MemorySet::from_existed_user(&parent_inner.memory_set);
         let trap_cx_ppn = memory_set
             .translate(VirtAddr::from(TRAP_CONTEXT).into())
@@ -138,10 +143,12 @@ impl TaskControlBlock {
             inner: unsafe {
                 UPSafeCell::new(TaskControlBlockInner {
                     trap_cx_ppn,
-                    base_size: parent_inner.base_size,
+                    base_size: parent_inner.base_size, // 保持base size一致
                     task_cx: TaskContext::goto_trap_return(kernel_stack_top),
                     task_status: TaskStatus::Ready,
                     memory_set,
+                    // 使用弱引用，因为Arc会占据对象的所有权，但我们只是希望获得一个指向父节点的指针，不希望夺取所有权
+                    // 并且我们也不能保证子进程一定先于父进程退出，有可能parent会变成None
                     parent: Some(Arc::downgrade(self)),
                     children: Vec::new(),
                     exit_code: 0,

@@ -19,11 +19,12 @@ use user_lib::{exec, fork, waitpid};
 #[no_mangle]
 pub fn main() -> i32 {
     println!("Rust user shell");
-    let mut line: String = String::new();
+    let mut line: String = String::new(); // 维护用户当前的输入信息
     print!(">> ");
     loop {
-        let c = getchar();
+        let c = getchar(); // 调用sys_read来读取字符
         match c {
+            // 换行符 line feed(\n) & 回车符 carrage return(\r)
             LF | CR => {
                 println!("");
                 if !line.is_empty() {
@@ -46,6 +47,7 @@ pub fn main() -> i32 {
                 }
                 print!(">> ");
             }
+            // back space & delete
             BS | DL => {
                 if !line.is_empty() {
                     print!("{}", BS as char);
@@ -54,6 +56,7 @@ pub fn main() -> i32 {
                     line.pop();
                 }
             }
+            // others
             _ => {
                 print!("{}", c as char);
                 line.push(c as char);

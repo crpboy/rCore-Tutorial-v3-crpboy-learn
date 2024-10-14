@@ -5,8 +5,11 @@ use alloc::collections::VecDeque;
 use alloc::sync::Arc;
 use lazy_static::*;
 ///A array of `TaskControlBlock` that is thread-safe
+/// 这里TaskManager被简化为仅维护所有的PCB
+/// 换言之，这就是一个任务管理器
+
 pub struct TaskManager {
-    ready_queue: VecDeque<Arc<TaskControlBlock>>,
+    ready_queue: VecDeque<Arc<TaskControlBlock>>, // 通过arc保证安全性
 }
 
 /// A simple FIFO scheduler.

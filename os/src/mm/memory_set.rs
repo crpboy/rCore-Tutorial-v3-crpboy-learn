@@ -233,6 +233,8 @@ impl MemorySet {
         )
     }
     ///Clone a same `MemorySet`
+    /// 功能：copy a new and same data into a new memory space from a already existed user space
+    /// 会进行物理空间的分配和拷贝
     pub fn from_existed_user(user_space: &Self) -> Self {
         let mut memory_set = Self::new_bare();
         // map trampoline

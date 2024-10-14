@@ -28,7 +28,9 @@ pub fn get_app_data(app_id: usize) -> &'static [u8] {
 }
 
 lazy_static! {
-    ///All of app's name
+    /// All of app's name
+    /// APP_NAMES初始化的时候会从汇编的_app_names里读取各个app的名称
+    /// 并包成一个vec<&str>返回
     static ref APP_NAMES: Vec<&'static str> = {
         let num_app = get_num_app();
         extern "C" {

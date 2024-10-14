@@ -1,3 +1,5 @@
+//! user初始进程 init process
+
 #![no_std]
 #![no_main]
 
@@ -9,7 +11,7 @@ use user_lib::{exec, fork, wait, yield_};
 #[no_mangle]
 fn main() -> i32 {
     if fork() == 0 {
-        exec("user_shell\0");
+        exec("user_shell\0"); // Rust 在将这些字符串连接到只读数据段的时候不会插入 \0 。
     } else {
         loop {
             let mut exit_code: i32 = 0;

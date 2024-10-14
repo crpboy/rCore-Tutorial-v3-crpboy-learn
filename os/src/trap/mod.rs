@@ -64,6 +64,7 @@ pub fn trap_handler() -> ! {
             // get system call return value
             let result = syscall(cx.x[17], [cx.x[10], cx.x[11], cx.x[12]]);
             // cx is changed during sys_exec, so we have to call it again
+            // 由于可能会进行exec调用, 调用完毕后会导致原先的trap context丢失, 所以需要重新进行一次context的获取
             cx = current_trap_cx();
             cx.x[10] = result as usize;
         }
@@ -89,6 +90,7 @@ pub fn trap_handler() -> ! {
         }
         Trap::Interrupt(Interrupt::SupervisorTimer) => {
             set_next_trigger();
+            // println!("\n### trigger time out");
             suspend_current_and_run_next();
         }
         _ => {

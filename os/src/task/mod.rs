@@ -38,6 +38,9 @@ pub use processor::{
     Processor,
 };
 /// Suspend the current 'Running' task and run the next task in task list.
+/// 事实上这里并没有run_next
+/// 只是对于当前的任务进行了弹出
+/// 然后会返回到run_tasks函数里进行下一个任务的寻找
 pub fn suspend_current_and_run_next() {
     // There must be an application running.
     let task = take_current_task().unwrap();
@@ -88,17 +91,17 @@ pub fn exit_current_and_run_next(exit_code: i32) {
     // do not move to its parent but under initproc
 
     // ++++++ access initproc TCB exclusively
-    {
-        let mut initproc_inner = INITPROC.inner_exclusive_access();
-        for child in inner.children.iter() {
-            child.inner_exclusive_access().parent = Some(Arc::downgrade(&INITPROC));
-            initproc_inner.children.push(child.clone());
-        }
+    let mut initproc_inner = INITPROC.inner_exclusive_access();
+    for child in inner.children.iter() {
+        child.inner_exclusive_access().parent = Some(Arc::downgrade(&INITPROC));
+        initproc_inner.children.push(child.clone()); // 将子进程转移到根进程当中
     }
+    drop(initproc_inner);
     // ++++++ release parent PCB
 
     inner.children.clear();
     // deallocate user space
+    // 提前释放, 防止持续占用物理页帧
     inner.memory_set.recycle_data_pages();
     drop(inner);
     // **** release current PCB

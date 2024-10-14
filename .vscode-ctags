@@ -1,0 +1,59 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROC_CWD	/mnt/e/rcore/rCore-Tutorial-v3/	//
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	5.9.0	//
+$(KERNEL_BIN)	os/Makefile	/^$(KERNEL_BIN): kernel$/;"	t
+APPS	user/Makefile	/^APPS := $(wildcard $(APP_DIR)\/*.rs)$/;"	m
+APP_DIR	user/Makefile	/^APP_DIR := src\/bin$/;"	m
+BINS	user/Makefile	/^BINS := $(patsubst $(APP_DIR)\/%.rs, $(TARGET_DIR)\/%.bin, $(APPS))$/;"	m
+BOARD	os/Makefile	/^BOARD := qemu$/;"	m
+BOOTLOADER	os/Makefile	/^BOOTLOADER := ..\/bootloader\/$(SBI)-$(BOARD).bin$/;"	m
+CP	user/Makefile	/^CP := cp $/;"	m
+DISASM	os/Makefile	/^DISASM ?= -x$/;"	m
+DISASM_TMP	os/Makefile	/^DISASM_TMP := target\/$(TARGET)\/$(MODE)\/asm$/;"	m
+DOCKER_TAG	Makefile	/^DOCKER_TAG ?= rcore-tutorial-v3:latest$/;"	m
+ELFS	user/Makefile	/^ELFS := $(patsubst $(APP_DIR)\/%.rs, $(TARGET_DIR)\/%, $(APPS))$/;"	m
+KERNEL_BIN	os/Makefile	/^KERNEL_BIN := $(KERNEL_ELF).bin$/;"	m
+KERNEL_ELF	os/Makefile	/^KERNEL_ELF := target\/$(TARGET)\/$(MODE)\/os$/;"	m
+KERNEL_ENTRY_PA	os/Makefile	/^KERNEL_ENTRY_PA := 0x80200000$/;"	m
+MODE	os/Makefile	/^MODE := release$/;"	m
+MODE	user/Makefile	/^MODE := release$/;"	m
+MODE_ARG	os/Makefile	/^	MODE_ARG := --release$/;"	m
+OBJCOPY	os/Makefile	/^OBJCOPY := rust-objcopy --binary-architecture=riscv64$/;"	m
+OBJCOPY	user/Makefile	/^OBJCOPY := rust-objcopy --binary-architecture=riscv64$/;"	m
+OBJDUMP	os/Makefile	/^OBJDUMP := rust-objdump --arch-name=riscv64$/;"	m
+OBJDUMP	user/Makefile	/^OBJDUMP := rust-objdump --arch-name=riscv64$/;"	m
+QEMU_ARGS	os/Makefile	/^QEMU_ARGS := -machine virt \\$/;"	m
+QEMU_NAME	os/Makefile	/^QEMU_NAME := qemu-system-riscv64$/;"	m
+SBI	os/Makefile	/^SBI ?= rustsbi$/;"	m
+TARGET	os/Makefile	/^TARGET := riscv64gc-unknown-none-elf$/;"	m
+TARGET	user/Makefile	/^TARGET := riscv64gc-unknown-none-elf$/;"	m
+TARGET_DIR	user/Makefile	/^TARGET_DIR := target\/$(TARGET)\/$(MODE)$/;"	m
+TEST	os/Makefile	/^TEST ?=$/;"	m
+TEST	user/Makefile	/^TEST ?= $/;"	m
+binary	user/Makefile	/^binary: elf$/;"	t
+build	os/Makefile	/^build: env $(KERNEL_BIN)$/;"	t
+build	user/Makefile	/^build: binary$/;"	t
+build_docker	Makefile	/^build_docker: $/;"	t
+clean	os/Makefile	/^clean:$/;"	t
+clean	user/Makefile	/^clean:$/;"	t
+debug	os/Makefile	/^debug: qemu-version-check build$/;"	t
+disasm	os/Makefile	/^disasm: kernel$/;"	t
+disasm-vim	os/Makefile	/^disasm-vim: kernel$/;"	t
+docker	Makefile	/^docker:$/;"	t
+elf	user/Makefile	/^elf: $(APPS)$/;"	t
+env	os/Makefile	/^env:$/;"	t
+fmt	Makefile	/^fmt:$/;"	t
+gdbclient	os/Makefile	/^gdbclient:$/;"	t
+gdbserver	os/Makefile	/^gdbserver: qemu-version-check build$/;"	t
+kernel	os/Makefile	/^kernel:$/;"	t
+qemu-version-check	os/Makefile	/^qemu-version-check:$/;"	t
+run	os/Makefile	/^run: run-inner$/;"	t
+run-inner	os/Makefile	/^run-inner: qemu-version-check build$/;"	t

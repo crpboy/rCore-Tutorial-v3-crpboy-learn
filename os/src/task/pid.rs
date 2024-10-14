@@ -1,10 +1,16 @@
 //!Implementation of [`PidAllocator`]
+//! 在同一时刻，每个进程都拥有一个独属于自己的ID号 pid
+//! 我们使用PidAllocator来进行分配
+//! 并使用PidHandle进行追踪和自动drop
+
 use crate::config::{KERNEL_STACK_SIZE, PAGE_SIZE, TRAMPOLINE};
 use crate::mm::{MapPermission, VirtAddr, KERNEL_SPACE};
 use crate::sync::UPSafeCell;
 use alloc::vec::Vec;
 use lazy_static::*;
+
 ///Pid Allocator struct
+/// 使用类似frame allocator的思想 创建recycled进行垃圾回收
 pub struct PidAllocator {
     current: usize,
     recycled: Vec<usize>,
@@ -44,6 +50,7 @@ lazy_static! {
         unsafe { UPSafeCell::new(PidAllocator::new()) };
 }
 ///Bind pid lifetime to `PidHandle`
+/// 使用RAII思想，绑定生命周期，实现Drop trait来实现自动dealloc
 pub struct PidHandle(pub usize);
 
 impl Drop for PidHandle {
@@ -63,7 +70,12 @@ pub fn kernel_stack_position(app_id: usize) -> (usize, usize) {
     let bottom = top - KERNEL_STACK_SIZE;
     (bottom, top)
 }
+
 ///Kernelstack for app
+/// 不需要保存内核栈位置，因为pid唯一决定内核栈位置
+/// Q: 为什么不使用pidhandle？
+/// A: 因为这里只是一个对于pidhandle的拷贝，用于进行内核栈的跟踪
+/// 我们不希望对一个pid进行二次drop，我们希望的是一个独立的 针对于内核栈的 drop属性
 pub struct KernelStack {
     pid: usize,
 }
@@ -72,6 +84,8 @@ impl KernelStack {
     ///Create a kernelstack from pid
     pub fn new(pid_handle: &PidHandle) -> Self {
         let pid = pid_handle.0;
+        // 从这里可以发现，我们的pid与内核栈位置直接绑定，因此不需要额外存储内核栈的位置
+        // 只需要存储pid，就可以通过pid来计算内核栈的位置了
         let (kernel_stack_bottom, kernel_stack_top) = kernel_stack_position(pid);
         KERNEL_SPACE.exclusive_access().insert_framed_area(
             kernel_stack_bottom.into(),
@@ -100,6 +114,7 @@ impl KernelStack {
     }
 }
 
+/// 当然，当drop的时候，需要移除栈空间的页表映射
 impl Drop for KernelStack {
     fn drop(&mut self) {
         let (kernel_stack_bottom, _) = kernel_stack_position(self.pid);

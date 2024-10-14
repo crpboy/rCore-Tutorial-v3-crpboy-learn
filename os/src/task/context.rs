@@ -2,6 +2,7 @@
 use crate::trap::trap_return;
 
 #[repr(C)]
+#[derive(Debug)]
 /// task context structure containing some registers
 pub struct TaskContext {
     /// return address ( e.g. __restore ) of __switch ASM function
