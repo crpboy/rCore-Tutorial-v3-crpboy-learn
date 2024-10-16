@@ -4,12 +4,15 @@ use alloc::sync::Arc;
 use lazy_static::*;
 use spin::Mutex;
 /// Cached block inside memory
+/// 一个block cache对应着一个磁盘block在内存里的缓存
 pub struct BlockCache {
     /// cached block data
+    /// 用于存放数据
     cache: [u8; BLOCK_SZ],
     /// underlying block id
     block_id: usize,
     /// underlying block device
+    /// 通过trait进行泛型描述, 只要是实现了read/write函数的设备都可以进行交互
     block_device: Arc<dyn BlockDevice>,
     /// whether the block is dirty
     modified: bool,
@@ -28,10 +31,12 @@ impl BlockCache {
         }
     }
     /// Get the address of an offset inside the cached block data
+    /// 获取offset对应的cache信息的指针, 以usize的形式返回, 便于类型转换
     fn addr_of_offset(&self, offset: usize) -> usize {
         &self.cache[offset] as *const _ as usize
     }
 
+    /// 获得offset对应的cache元素引用
     pub fn get_ref<T>(&self, offset: usize) -> &T
     where
         T: Sized,
@@ -42,6 +47,7 @@ impl BlockCache {
         unsafe { &*(addr as *const T) }
     }
 
+    /// 获得offset对应的cache元素的可变引用
     pub fn get_mut<T>(&mut self, offset: usize) -> &mut T
     where
         T: Sized,
@@ -53,6 +59,7 @@ impl BlockCache {
         unsafe { &mut *(addr as *mut T) }
     }
 
+    /// 传入的f是一个闭包, 类似map()的作用, 可以
     pub fn read<T, V>(&self, offset: usize, f: impl FnOnce(&T) -> V) -> V {
         f(self.get_ref(offset))
     }
